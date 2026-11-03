@@ -2,74 +2,186 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{seu nome aqui} - UX e Dev Front-end</title>
-    <!-- CSS compilado do SCSS | colocar o link correto, pois este vai dar erro, viu-->
-    <link rel="stylesheet" href="css/style.css">
-    <!-- Usando a fonte de icones aqui-->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catálogo de Oficinas Vue</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link href="https://cdn.jsdelivr.net/npm/daisyui@5" rel="stylesheet" type="text/css" />
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 </head>
 
-<body>
+<body class="min-h-screen bg-base-200 flex items-center justify-center p-4 sm:p-6">
 
-    <header role="banner">
-        <nav role="navigation" aria-label="Navegação principal">
-            <ul>
-                <li><a href="#sobre">Sobre</a></li>
-                <li><a href="#tecnologias">Tecnologias</a></li>
-                <li><a href="#contato">Contato</a></li>
-            </ul>
-        </nav>
-    </header>
+  <div id="app" class="card bg-base-100 shadow-xl w-full max-w-xl">
+    <div class="card-body gap-5">
 
-    <main role="main">
-        <section id="sobre" aria-labelledby="titulo-card">
-            <div class="card">
+      <h1 class="card-title justify-center text-2xl">Catálogo de oficinas</h1>
 
-                <!-- Avatar (placeholder) -->
-                <div class="card__avatar">
-                    <img src="https://via.placeholder.com/120x120/2c3e50/ffffff?text=Bruno"
-                        alt="Avatar de Bruno Nakamura, UX e Dev Front-end">
-                </div>
+      <form @submit.prevent="adicionarOficina" class="flex flex-col sm:flex-row gap-2">
+        <label for="nova-oficina" class="sr-only">Nome da oficina</label>
+        <input id="nova-oficina" type="text" v-model="novaOficina" placeholder="Nome da nova oficina"
+          class="input input-bordered w-full" autocomplete="off">
+        <button type="submit" class="btn btn-primary">Adicionar</button>
+      </form>
 
-                <!-- Informações -->
-                <div class="card__content">
-                    <h1 id="titulo-card">Bruno Nakamura</h1>
-                    <p class="card__subtitle">UX e Dev Front-end</p>
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="join" aria-label="Filtros de oficinas">
+          <button type="button" class="btn join-item btn-sm" :class="filtro === 'todas' ? 'btn-primary' : 'btn-outline'"
+            :aria-pressed="filtro === 'todas'" @click="filtro = 'todas'">Todas</button>
+          <button type="button" class="btn join-item btn-sm"
+            :class="filtro === 'favoritas' ? 'btn-primary' : 'btn-outline'" :aria-pressed="filtro === 'favoritas'"
+            @click="filtro = 'favoritas'">Favoritas</button>
+        </div>
+        <p class="text-sm text-base-content/70">
+          Exibindo: <strong>{{ oficinasVisiveis.length }}</strong>
+        </p>
+      </div>
 
-                    <p class="card__description">
-                        Sou um híbrido raro: Design Systems + Engenharia de Produto.
-                        Entrego de ponta a ponta – da descoberta à produção – com métricas
-                        de negócio na cabeceira e DX/UX no detalhe.<br>
-                        Tradução simultânea entre PMs, Design, Front, Back e Data.
-                        Sem teatrinho: shippo, meço, repito.
-                    </p>
+      <p v-if="oficinasVisiveis.length === 0" class="bg-base-200 rounded-box p-5 text-center text-base-content/70"
+        role="status">
+        Nenhuma oficina encontrada.
+      </p>
 
-                    <!-- Botão com ícone -->
-                    <a href="#" class="card__button" aria-label="Vamos trabalhar juntos">
-                        Vamos trabalhar juntos <i class="fas fa-arrow-right" aria-hidden="true"></i>
-                    </a>
-                </div>
+      <ul v-else class="space-y-2">
+        <li v-for="oficina in oficinasVisiveis" :key="oficina.id"
+          class="border border-base-300 rounded-box p-3 flex flex-col sm:flex-row sm:items-center gap-3">
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold break-words">{{ oficina.titulo }}</p>
+            <span v-if="oficina.favorita" class="badge badge-warning badge-sm mt-1">Favorita</span>
+          </div>
+          <div class="flex gap-2">
+            <button type="button" class="btn btn-sm flex-1 sm:flex-none"
+              :class="oficina.favorita ? 'btn-warning' : 'btn-outline'"
+              :aria-label="(oficina.favorita ? 'Desfavoritar ' : 'Favoritar ') + oficina.titulo"
+              @click="alternarFavorito(oficina.id)">
+              {{ oficina.favorita ? '★ Favorita' : '☆ Favoritar' }}
+            </button>
+            <button type="button" class="btn btn-error btn-outline btn-sm" :aria-label="'Excluir ' + oficina.titulo"
+              @click="removerOficina(oficina.id)">Excluir</button>
+          </div>
+        </li>
+      </ul>
 
-                <!-- Tecnologias (mockup de ícones) -->
-                <div class="card__tech" id="tecnologias">
-                    <h2 class="card__tech-title">Tecnologias que domino</h2>
-                    <ul class="card__tech-list">
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i> ClickUp</li>
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i> Dropbox</li>
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i> PAYCHEX</li>
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i> elastic</li>
-                        <li><i class="fas fa-check-circle" aria-hidden="true"></i> stripe</li>
-                    </ul>
-                </div>
-            </div>
-        </section>
-    </main>
+    </div>
+  </div>
 
-    <footer role="contentinfo">
-        <p>&copy; 2026 Bruno Nakamura - Exemplo didático para alunos de webdesign</p>
-    </footer>
+  <script>
+    Vue.createApp({
+
+      data() {
+        return {
+          novaOficina: '',        // texto digitado no formulário
+          proximoId: 4,          // ID da próxima oficina adicionada
+          filtro: 'todas',        // 'todas' ou 'favoritas'
+          oficinas: [            // lista de objetos exibida por v-for
+            { id: 1, titulo: 'Fotografia digital', favorita: false },
+            { id: 2, titulo: 'Introdução ao Figma', favorita: true },
+            { id: 3, titulo: 'Produção de podcasts', favorita: false }
+          ]
+        }
+      },
+
+      // ==========================================
+      // dados calculados automaticamente
+      // ==========================================
+      computed: {
+
+        // ==========================================
+        // TODO 4 — oficinasVisiveis()  
+        // Seleciona quais oficinas serão mostradas.
+        // É usado no v-for e no contador da página.
+        //
+        // Regras:
+        //  1. Se this.filtro === 'favoritas':
+        //       retorne somente as oficinas em que
+        //       oficina.favorita for true (use .filter())
+        //  2. Caso contrário: retorne this.oficinas
+        // ==========================================
+        oficinasVisiveis() {
+          if (this.filtro === 'favoritas') {
+            return this.oficinas.filter(oficina => oficina.favorita);
+          }
+          return this.oficinas;
+        }
+      },
+
+      // ==========================================
+      // as ações do catálogo
+      // ==========================================
+      methods: {
+
+        // EXEMPLO JÁ PRONTO — use como referência
+        // Limpa o campo de texto após o cadastro.
+        limparCampo() {
+          this.novaOficina = '';
+        },
+
+        // ==========================================
+        // TODO 1 — adicionarOficina()  
+        // Inclui uma oficina na lista.
+        //
+        // Regras:
+        //  1. Crie const titulo = this.novaOficina.trim()
+        //  2. Se titulo === '': return (saia)
+        //  3. Use this.oficinas.push(...) para incluir:
+        //       id: this.proximoId
+        //       titulo: titulo
+        //       favorita: false
+        //  4. Aumente this.proximoId em 1
+        //  5. Chame this.limparCampo()
+        // ==========================================
+        adicionarOficina() {
+          const titulo = this.novaOficina.trim();
+          if (titulo === '') return;
+
+          this.oficinas.push({
+            id: this.proximoId,
+            titulo: titulo,
+            favorita: false
+          });
+
+          this.proximoId++;
+          this.limparCampo();
+        },
+
+        // ==========================================
+        // TODO 2 — alternarFavorito(id)  
+        // Marca ou desmarca uma oficina como favorita.
+        //
+        // Regras:
+        //  1. Procure a oficina pelo id:
+        //       const oficina = this.oficinas.find(
+        //         item => item.id === id
+        //       )
+        //  2. Se não encontrou (if (!oficina)): return
+        //  3. Inverta o valor:
+        //       oficina.favorita = !oficina.favorita
+        // ==========================================
+        alternarFavorito(id) {
+          const oficina = this.oficinas.find(item => item.id === id);
+          if (!oficina) return;
+          oficina.favorita = !oficina.favorita;
+        },
+
+        // ==========================================
+        // TODO 3 — removerOficina(id)  
+        // Exclui a oficina que recebeu o clique.
+        //
+        // Regras:
+        //  1. Use this.oficinas.filter(...) para
+        //     criar uma lista sem a oficina cujo
+        //     item.id for igual ao id recebido
+        //  2. Guarde a nova lista em this.oficinas
+        //  3. Observe como v-for atualiza a interface
+        // ==========================================
+        removerOficina(id) {
+          this.oficinas = this.oficinas.filter(item => item.id !== id);
+        }
+      }
+
+    }).mount('#app')
+  </script>
 </body>
 
 </html>
